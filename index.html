@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Diario Alimenticio — Final</title>
+<style>
+/* ====== Estilo general (Orbitron / ultra-cyber) ====== */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap');
+:root{
+  --red:#ff0000; --accent:#ff3333; --accent-strong:#cc0000; --cyan:#00ffff; --glass: rgba(20,0,0,0.6);
+}
+*{box-sizing:border-box}
+body{
+  margin:0; font-family:'Orbitron', sans-serif; background: repeating-conic-gradient(var(--red) 0% 25%, #000 0% 50%) 50%/80px 80px;
+  color:#fff; min-height:100vh; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+}
+.container{max-width:1100px;margin:0 auto;padding:18px;position:relative;z-index:2}
+h1{text-align:center;margin:6px 0 12px;font-size:2.4rem;text-shadow:0 0 15px var(--red),0 0 30px #ff3333}
+
+/* particles */
+#particles{position:fixed;inset:0;pointer-events:none;z-index:0}
+.particle{position:absolute;width:8px;height:8px;background:radial-gradient(circle,var(--red),transparent);border-radius:50%;opacity:0.6;animation:float 12s linear infinite}
+@keyframes float{0%{transform:translateY(110vh) scale(.6)}100%{transform:translateY(-10vh) scale(1.4)}}
+
+/* tabs */
+#tabs{display:flex;gap:10px;justify-content:center;margin-bottom:12px;flex-wrap:wrap}
+.tablink{background:var(--accent);color:#fff;border:none;padding:12px 20px;border-radius:12px;cursor:pointer;font-weight:700;box-shadow:0 0 12px var(--accent),0 0 25px #ff3333}
+.tablink:hover{transform:translateY(-2px)}
+.tablink.active{background:var(--accent-strong);transform:scale(1.03)}
+
+/* glass panels */
+.glass{backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); background-color:var(--glass); border-radius:16px; padding:18px; box-shadow:0 0 25px rgba(255,0,0,0.2); margin-bottom:14px}
+
+/* layout helpers */
+.flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.flex-1{flex:1;min-width:180px}
+
+/* inputs */
+input, button, select, textarea{padding:10px;border-radius:8px;border:none;background:rgba(255,0,0,0.85);color:#fff;font-weight:700;box-shadow:0 0 12px var(--accent);outline:none}
+input[type="search"]{background:rgba(0,0,0,0.45);font-weight:500}
+button.small{padding:8px 10px}
+select[multiple]{height:120px}
+
+/* cards */
+.ultra-cyber-card{display:flex;gap:12px;background:rgba(0,0,0,0.65);padding:12px;border-radius:12px;margin:10px 0;box-shadow:0 0 18px rgba(255,0,0,0.15)}
+.ultra-cyber-card img{width:84px;border-radius:8px;box-shadow:0 0 10px rgba(255,0,0,0.08)}
+.card-text{flex:1}
+
+/* product card color */
+.product-card{border-radius:12px;padding:10px;margin:8px 0;display:flex;gap:12px;align-items:flex-start}
+.product-card.green{background:rgba(0,255,0,0.06);border:1px solid rgba(0,255,0,0.18)}
+.product-card.yellow{background:rgba(255,255,0,0.06);border:1px solid rgba(255,255,0,0.18)}
+.product-card.red{background:rgba(255,0,0,0.06);border:1px solid rgba(255,0,0,0.18)}
+.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:var(--accent);font-weight:700;color:#fff;margin-left:8px}
+
+/* legend */
+.legend{display:flex;gap:12px;align-items:center;margin-bottom:10px}
+.legend .item{display:flex;gap:8px;align-items:center;font-weight:700}
+.legend .dot{width:14px;height:14px;border-radius:4px}
+
+/* filters */
+.filter-panel{display:flex;gap:12px;flex-wrap:wrap}
+.filter-box{background:rgba(0,0,0,0.55);padding:10px;border-radius:8px;width:100%}
+.filter-section{display:flex;flex-direction:column;gap:8px;max-height:260px;overflow:auto;padding:6px;border-radius:6px;background:rgba(0,0,0,0.25)}
+.filter-section input[type=search]{width:100%;margin-bottom:6px;background:rgba(255,255,255,0.02);padding:8px;border-radius:6px}
+
+/* lists */
+.filter-list{display:flex;flex-direction:column;gap:6px}
+.filter-list label{display:flex;gap:8px;align-items:center;cursor:pointer;font-size:0.95rem}
+
+/* results & pagination */
+.results{margin-top:12px}
+.pager{display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+.pager button{background:rgba(255,255,255,0.08);color:#fff;padding:8px 12px;border-radius:8px}
+
+/* diary table */
+table{width:100%;border-collapse:collapse;margin-top:10px;font-size:0.95rem}
+th,td{border:1px solid rgba(255,255,255,0.12);padding:10px;text-align:left;vertical-align:top}
+th{background:rgba(255,0,0,0.12)}
+tr:nth-child(even){background:rgba(255,0,0,0.04)}
+.totals-row{font-weight:700;background:rgba(255,0,0,0.12)}
+.delete-btn{background:#ff3333;border:none;padding:6px;border-radius:6px;cursor:pointer}
+
+/* image modal */
+.image-modal{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:9999;display:none}
+.image-modal img{max-width:90%;max-height:90%;border-radius:10px}
+
+/* loading overlay */
+.loading-overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);z-index:9998;display:none}
+.spinner{width:56px;height:56px;border-radius:50%;border:6px solid rgba(255,255,255,0.08);border-top-color:var(--cyan);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* helpers */
+.helper{font-size:0.9rem;color:#ddd}
+.source-info{font-size:0.85rem;color:#ccc;margin-top:6px;background:rgba(255,0,0,0.06);padding:8px;border-radius:8px}
+.show-image-btn{background:rgba(0,0,0,0.45);padding:6px 8px;border-radius:6px;color:#fff;border:none}
+</style>
+</head>
+<body>
+<div id="particles"></div>
+
+<div class="container">
+  <h1>🍷 Diario Alimenticio</h1>
+
+  <div id="tabs" class="flex">
+    <button class="tablink active" data-tab="diario">📒 Diario</button>
+    <button class="tablink" data-tab="busqueda">🔍 Búsqueda</button>
+    <button class="tablink" data-tab="chat">🤖 Chat IA</button>
+    <button class="tablink" data-tab="barcode">📷 Escáner</button>
+  </div>
+
+  <!-- ========== BUSQUEDA (glass) ========== -->
+  <div id="busqueda" class="glass" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap">
+      <div class="legend">
+        <div class="item"><div class="dot" style="background:#0f0"></div> 🟢 Saludable</div>
+        <div class="item"><div class="dot" style="background:#ff0"></div> 🟡 Intermedio</div>
+        <div class="item"><div class="dot" style="background:#f00"></div> 🔴 Menos saludable</div>
+      </div>
+      <div class="helper">Filtros combinables: tienda + categoría + texto</div>
+    </div>
+
+    <div style="margin-top:10px" class="filter-panel">
+      <div class="filter-box flex-1">
+        <div class="flex" style="gap:8px">
+          <input type="search" id="globalSearch" placeholder="🔎 Escribe lo que buscas (ej. galletas)..." class="flex-1">
+          <button id="btnSearch" class="small">Buscar</button>
+          <button id="btnClearFilters" class="small">Quitar filtros</button>
+        </div>
+
+        <div style="display:flex;gap:12px;margin-top:10px;flex-wrap:wrap">
+          <div style="flex:1;min-width:260px">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <strong>Filtrar por tiendas</strong>
+              <button id="btnLoadStores" class="small">📥 Cargar tiendas</button>
+            </div>
+            <div class="filter-section" id="storesSection">
+              <input type="search" id="storeSearch" placeholder="Buscar tienda..." />
+              <div class="filter-list" id="storesList"><em class="helper">Pulsa "Cargar tiendas" o espera…</em></div>
+            </div>
+          </div>
+
+          <div style="flex:1;min-width:260px">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <strong>Filtrar por categorías</strong>
+              <button id="btnLoadCats" class="small">📥 Cargar categorías</button>
+            </div>
+            <div class="filter-section" id="catsSection">
+              <input type="search" id="catSearch" placeholder="Buscar categoría..." />
+              <div class="filter-list" id="catsList"><em class="helper">Pulsa "Cargar categorías" o espera…</em></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="results" id="resultsArea"></div>
+    <div class="pager" id="pager"></div>
+  </div>
+
+  <!-- ========== DIARIO (glass) ========== -->
+  <div id="diario" class="glass" style="display:block">
+    <h2>Registro de Comidas</h2>
+
+    <form id="foodForm" class="flex" style="margin-bottom:10px">
+      <input id="alimento" class="flex-1" placeholder="Alimento (nombre)..." />
+      <input id="cantidad" style="width:140px" type="number" placeholder="Cantidad (g)" />
+      <button id="addFromForm" type="button">➕ Añadir</button>
+    </form>
+
+    <div class="flex" style="margin-top:6px">
+      <input id="searchNameDiary" class="flex-1" placeholder="🔍 Buscar en Diario por nombre..." />
+      <select id="filterBrandDiary" style="min-width:180px"></select>
+      <select id="filterCategoryDiary" style="min-width:180px"></select>
+    </div>
+
+    <div id="foodTableWrapper" style="margin-top:12px">
+      <table>
+        <thead>
+          <tr><th>Alimento</th><th>Cantidad (g)</th><th>Calorías</th><th>Proteínas (g)</th><th>Carbohidratos (g)</th><th>Grasas (g)</th><th>Eliminar</th></tr>
+        </thead>
+        <tbody id="foodBody"></tbody>
+        <tfoot><tr class="totals-row"><td colspan="2">Totales</td><td id="totalCalories">0</td><td id="totalProtein">0</td><td id="totalCarbs">0</td><td id="totalFat">0</td><td></td></tr></tfoot>
+      </table>
+    </div>
+  </div>
+
+  <!-- ========== CHAT (glass) ========== -->
+  <div id="chat" class="glass" style="display:none">
+    <h2>Chat IA</h2>
+    <div class="flex">
+      <input id="chatInput" class="flex-1" placeholder="Pregunta o nombre de producto..." />
+      <button id="sendChat">Enviar</button>
+    </div>
+    <div id="chatMessages" style="margin-top:10px;max-height:240px;overflow:auto"></div>
+  </div>
+
+  <!-- ========== BARCODE (glass) ========== -->
+  <div id="barcode" class="glass" style="display:none">
+    <h2>Escanear / Buscar por EAN</h2>
+    <div class="flex">
+      <input id="barcodeInput" class="flex-1" placeholder="Introduce código EAN..." />
+      <button id="btnSearchBarcode" class="small">Buscar</button>
+    </div>
+    <div style="margin-top:8px" class="helper">Si la cámara no funciona en Google Sites, sube imagen del código</div>
+    <input type="file" id="barcodeFile" accept="image/*" style="margin-top:8px" />
+    <div id="barcodeResults" style="margin-top:8px"></div>
+  </div>
+
+</div>
+
+<!-- image modal -->
+<div id="imageModal" class="image-modal"><img id="imageModalImg" src=""><button id="closeImageModal" style="position:absolute;top:18px;right:18px;padding:8px;border-radius:8px;background:var(--accent);border:none;color:#fff">Cerrar</button></div>
+
+<!-- loading overlay -->
+<div id="loadingOverlay" class="loading-overlay"><div style="text-align:center;color:#fff"><div class="spinner"></div><div style="margin-top:10px">Buscando productos…</div></div></div>
+
+<!-- libs -->
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.19.1/umd/index.min.js"></script>
+
+<script>
+/* ========= Particles init ========= */
+(function createParticles(){
+  const container=document.getElementById('particles');
+  for(let i=0;i<36;i++){ const p=document.createElement('div'); p.className='particle'; p.style.left=(Math.random()*100)+'vw'; p.style.top=(Math.random()*100)+'vh'; p.style.animationDuration=(8+Math.random()*8)+'s'; p.style.opacity=Math.random(); container.appendChild(p); }
+})();
+
+/* ========= State ========= */
+let foods = []; // diary items: {product, qty}
+let searchResults = []; // results from OFF
+let currentPage = 1;
+const PAGE_SIZE = 10;
+let filtersLoaded = false;
+let html5QrcodeScanner = null;
+
+/* ========= Helpers ========= */
+function buildProductURL(p){
+  if(!p) return '#';
+  if(p.url) return p.url;
+  if(p.code) return `https://world.openfoodfacts.org/product/${p.code}`;
+  return '#';
+}
+function round1(x){ return Math.round(x*10)/10; }
+
+/* nutritions helpers */
+function getPerGram(nutriments, serving_size){
+  const n = nutriments || {};
+  const kcal100 = (n['energy-kcal_100g']!=null) ? n['energy-kcal_100g'] : (n['energy_100g']!=null ? n['energy_100g']/4.184 : null);
+  if(kcal100!=null || n.proteins_100g!=null || n.carbohydrates_100g!=null || n.fat_100g!=null){
+    return { basis:'100g', label:'por 100 g', kcal_g:(kcal100||0)/100, prot_g:(n.proteins_100g||0)/100, carb_g:(n.carbohydrates_100g||0)/100, fat_g:(n.fat_100g||0)/100 };
+  }
+  const kcalServing = (n['energy-kcal_serving']!=null) ? n['energy-kcal_serving'] : (n['energy_serving']!=null ? n['energy_serving']/4.184 : null);
+  let servingQty = null;
+  if(serving_size){
+    const m = String(serving_size).match(/([\d.,]+)\s*(g|ml)/i);
+    if(m) servingQty = parseFloat(m[1].replace(',','.'));
+  }
+  if(kcalServing!=null && servingQty){
+    return { basis: servingQty+'g', label:`por ración (${servingQty} g)`, kcal_g:kcalServing/servingQty, prot_g:(n.proteins_serving||0)/servingQty, carb_g:(n.carbohydrates_serving||0)/servingQty, fat_g:(n.fat_serving||0)/servingQty };
+  }
+  return { basis:'-', label:'datos no disponibles', kcal_g:0, prot_g:0, carb_g:0, fat_g:0 };
+}
+
+/* classification by NutriScore or heuristic */
+function classifyProduct(p){
+  const ng = (p.nutrition_grades || (p.nutrition_grades_tags && p.nutrition_grades_tags[0])) || null;
+  if(ng){
+    const letter = String(ng).trim().charAt(0).toLowerCase();
+    if(letter==='a' || letter==='b') return 'green';
+    if(letter==='c') return 'yellow';
+    return 'red';
+  }
+  const n = p.nutriments || {};
+  const kcal100 = (n['energy-kcal_100g']!=null) ? n['energy-kcal_100g'] : (n['energy_100g']!=null ? n['energy_100g']/4.184 : null);
+  if(kcal100==null) return 'red';
+  if(kcal100 < 200) return 'green';
+  if(kcal100 < 350) return 'yellow';
+  return 'red';
+}
+
+/* parse ingredients text and attempt scaling numeric quantities */
+function calculateIngredients(ingredientsText, factor){
+  if(!ingredientsText) return 'N/A';
+  return String(ingredientsText).split(',').map(part=>{
+    const m = part.trim().match(/([\d.,]+)\s*(g|kg|mg|ml)\b(.*)/i);
+    if(m){
+      const num = parseFloat(m[1].replace(',','.')) * factor;
+      const unit = m[2];
+      const rest = m[3]||'';
+      return `${num.toFixed(1)} ${unit}${rest}`;
+    }
+    return part.trim();
+  }).join(', ');
+}
+
+/* Loading overlay */
+function showLoading(show=true){ document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none'; }
+
+/* ========= Tabs behavior ========= */
+document.querySelectorAll('.tablink').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tablink').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.glass').forEach(s=>s.style.display='none');
+    const tab = btn.dataset.tab;
+    document.getElementById(tab).style.display='block';
+    btn.classList.add('active');
+    if(tab==='busqueda') loadFiltersOnce();
+    if(tab==='barcode') startScanner();
+  });
+});
+
+/* ========= Load stores & categories (try JSON then HTML fallback) ========= */
+async function fetchJSONorHTMLlist(jsonUrl, htmlUrl, selectorHeuristic){
+  try{
+    const r = await fetch(jsonUrl);
+    if(r.ok){
+      const j = await r.json();
+      if(j.tags && Array.isArray(j.tags) && j.tags.length) return j.tags.map(t=>({id:t.id||t.name||t, name:t.name||t.id||t}));
+      if(j.facets && Array.isArray(j.facets)) {
+        for(const f of j.facets) if(f.entries && f.entries.length) return f.entries.map(e=>({id:e.id||e.name,name:e.name||e.id}));
+      }
+    }
+  }catch(e){ console.warn('JSON fetch failed', jsonUrl, e); }
+  try{
+    const r2 = await fetch(htmlUrl);
+    if(r2.ok){
+      const text = await r2.text();
+      const doc = new DOMParser().parseFromString(text,'text/html');
+      const items = selectorHeuristic(doc);
+      if(items && items.length) return Array.from(new Set(items)).map(x=>({id:x,name:x}));
+    }
+  }catch(e){ console.warn('HTML fetch failed', htmlUrl, e); }
+  return null;
+}
+
+async function populateStores(){
+  const storesListEl = document.getElementById('storesList');
+  storesListEl.innerHTML = '<em class="helper">Cargando tiendas...</em>';
+  const data = await fetchJSONorHTMLlist(
+    'https://es.openfoodfacts.org/facets/tiendas.json',
+    'https://es.openfoodfacts.org/facets/tiendas',
+    doc => Array.from(doc.querySelectorAll('a')).map(a=>a.textContent.trim()).filter(t=>t && t.length>1)
+  );
+  storesListEl.innerHTML = '';
+  if(!data || !data.length){
+    const fallback = ['Mercadona','Lidl','Carrefour','Dia','Eroski','Alcampo','Consum','Hipercor','Bonpreu'];
+    fallback.forEach(s=>{
+      const label=document.createElement('label'); label.innerHTML=`<input type="checkbox" value="${s}"> ${s}`; storesListEl.appendChild(label);
+    });
+    return;
+  }
+  data.sort((a,b)=>a.name.localeCompare(b.name)).forEach(item=>{
+    const id = item.id || item.name;
+    const label=document.createElement('label');
+    label.innerHTML = `<input type="checkbox" value="${id}"> ${item.name}`;
+    storesListEl.appendChild(label);
+  });
+  document.getElementById('storeSearch').addEventListener('input', ()=>{
+    const q=document.getElementById('storeSearch').value.toLowerCase();
+    Array.from(storesListEl.children).forEach(label=>{
+      label.style.display = label.textContent.toLowerCase().includes(q) ? 'flex' : 'none';
+    });
+  });
+}
+
+async function populateCategories(){
+  const catsListEl = document.getElementById('catsList');
+  catsListEl.innerHTML = '<em class="helper">Cargando categorías...</em>';
+  const data = await fetchJSONorHTMLlist(
+    'https://es.openfoodfacts.org/facets/categorias.json',
+    'https://es.openfoodfacts.org/facets/categorias',
+    doc => Array.from(doc.querySelectorAll('a')).map(a=>a.textContent.trim()).filter(t=>t && t.length>1)
+  );
+  catsListEl.innerHTML = '';
+  if(!data || !data.length){
+    const fallback = ['Galletas','Bebidas','Lácteos','Pan','Cereales','Snacks','Chocolate','Conservas','Salsas'];
+    fallback.forEach(s=>{ const o=document.createElement('label'); o.innerHTML=`<input type="checkbox" value="${s}"> ${s}`; catsListEl.appendChild(o); });
+    return;
+  }
+  data.sort((a,b)=>a.name.localeCompare(b.name)).forEach(item=>{
+    const id = item.id || item.name;
+    const label = document.createElement('label'); label.innerHTML = `<input type="checkbox" value="${id}"> ${item.name}`; catsListEl.appendChild(label);
+  });
+  document.getElementById('catSearch').addEventListener('input', ()=>{
+    const q=document.getElementById('catSearch').value.toLowerCase();
+    Array.from(catsListEl.children).forEach(label=>{
+      label.style.display = label.textContent.toLowerCase().includes(q) ? 'flex' : 'none';
+    });
+  });
+}
+
+async function loadFiltersOnce(){
+  if(filtersLoaded) return;
+  filtersLoaded = true;
+  await populateStores();
+  await populateCategories();
+}
+
+/* ========= Get selected filters ========= */
+function getSelectedStores(){ return Array.from(document.querySelectorAll('#storesList input[type=checkbox]:checked')).map(i=>i.value); }
+function getSelectedCats(){ return Array.from(document.querySelectorAll('#catsList input[type=checkbox]:checked')).map(i=>i.value); }
+
+/* ========= Search logic ========= */
+document.getElementById('btnLoadStores').addEventListener('click', ()=> populateStores());
+document.getElementById('btnLoadCats').addEventListener('click', ()=> populateCategories());
+
+document.getElementById('btnSearch').addEventListener('click', ()=> { currentPage=1; runSearch(); });
+document.getElementById('btnClearFilters').addEventListener('click', ()=>{
+  document.getElementById('globalSearch').value='';
+  document.getElementById('storeSearch').value='';
+  document.getElementById('catSearch').value='';
+  document.querySelectorAll('#storesList input').forEach(i=>i.checked=false);
+  document.querySelectorAll('#catsList input').forEach(i=>i.checked=false);
+  searchResults = []; renderResults();
+});
+
+async function runSearch(){
+  const q = document.getElementById('globalSearch').value.trim();
+  const stores = getSelectedStores();
+  const cats = getSelectedCats();
+  showLoading(true);
+  let url = `https://world.openfoodfacts.org/cgi/search.pl?action=process&json=1&page_size=100&search_simple=1`;
+  if(q) url += `&search_terms=${encodeURIComponent(q)}`;
+  if(stores.length) url += `&stores_tags=${encodeURIComponent(stores.join(','))}`;
+  if(cats.length) url += `&categories_tags=${encodeURIComponent(cats.join(','))}`;
+  try{
+    const r = await fetch(url);
+    const j = await r.json();
+    searchResults = j.products || [];
+    currentPage = 1;
+    showLoading(false);
+    renderResults();
+  }catch(e){ console.error(e); showLoading(false); document.getElementById('resultsArea').innerHTML = '<div class="helper">⚠️ Error al buscar productos. Inténtalo de nuevo.</div>'; }
+}
+
+/* ========= Render search results & pagination ========= */
+function renderResults(){
+  const area = document.getElementById('resultsArea'); area.innerHTML = '';
+  if(!searchResults || !searchResults.length){ area.innerHTML = '<div class="helper">No hay resultados. Realiza una búsqueda.</div>'; document.getElementById('pager').innerHTML=''; return; }
+  const start = (currentPage-1)*PAGE_SIZE;
+  const pageItems = searchResults.slice(start, start+PAGE_SIZE);
+  pageItems.forEach((p, idx) => {
+    const cls = classifyProduct(p);
+    const card = document.createElement('div'); card.className = 'product-card ' + cls;
+    const imgHtml = p.image_front_small_url ? `<img src="${p.image_front_small_url}" alt="img" style="cursor:pointer" data-large="${p.image_front_url||p.image_front_small_url}">` : `<div style="width:84px;height:84px;border-radius:8px;background:rgba(255,255,255,0.03);display:flex;align-items:center;justify-content:center;color:#aaa">No Img</div>`;
+    const per = getPerGram(p.nutriments||{}, p.serving_size);
+    card.innerHTML = `
+      <div style="min-width:84px">${imgHtml}</div>
+      <div style="flex:1">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <strong style="font-size:1.05rem">${p.product_name || 'Sin nombre'}</strong>
+            <div class="helper">${p.brands || 'Marca N/D'}</div>
+          </div>
+          <div style="text-align:right">
+            <div class="helper">NutriScore: ${(p.nutrition_grades || (p.nutrition_grades_tags && p.nutrition_grades_tags[0]) || 'N/D').toString().toUpperCase()}</div>
+            <div class="helper">${per.label}</div>
+          </div>
+        </div>
+        <div class="source-info">
+          Categorías: ${(p.categories_tags||[]).map(c=>c.replace(/^..:/,'')).slice(0,6).join(', ') || 'N/D'}<br>
+          🔗 <a href="${buildProductURL(p)}" target="_blank">Fuente oficial</a>
+        </div>
+        <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+          <label>Peso (g): <input type="number" class="resWeight" value="100" style="width:88px;padding:8px;background:rgba(0,0,0,0.45)"></label>
+          <button class="resAdd small">➕ Añadir</button>
+          <button class="showImageBtn small">Mostrar foto</button>
+        </div>
+      </div>
+    `;
+    area.appendChild(card);
+
+    // image show/hide + modal open
+    const imgEl = card.querySelector('img');
+    const showBtn = card.querySelector('.showImageBtn');
+    if(imgEl){
+      imgEl.addEventListener('click', ()=> openImageModal(imgEl.dataset.large || imgEl.src));
+      showBtn.addEventListener('click', ()=>{
+        // toggle display large inline (below card) or open modal
+        openImageModal(imgEl.dataset.large || imgEl.src);
+      });
+    } else {
+      showBtn.disabled = true;
+    }
+
+    // add handler add to diary
+    card.querySelector('.resAdd').addEventListener('click', ()=>{
+      const qty = parseFloat(card.querySelector('.resWeight').value) || 100;
+      foods.push({ product: p, qty });
+      updateTable();
+      alert(`${p.product_name || 'Producto'} añadido (${qty} g)`);
+    });
+  });
+
+  renderPager();
+}
+
+/* pager */
+function renderPager(){
+  const total = Math.ceil(searchResults.length / PAGE_SIZE);
+  const pager = document.getElementById('pager'); pager.innerHTML = '';
+  if(total <= 1) return;
+  const prev = document.createElement('button'); prev.textContent='◀ Prev'; prev.disabled = currentPage === 1;
+  prev.addEventListener('click', ()=>{ if(currentPage>1){ currentPage--; renderResults(); }});
+  pager.appendChild(prev);
+  let start = Math.max(1, currentPage-3), end = Math.min(total, currentPage+3);
+  if(end - start < 6){ start = Math.max(1, end-6); end = Math.min(total, start+6); }
+  for(let i=start;i<=end;i++){
+    const b = document.createElement('button'); b.textContent = i; if(i===currentPage) b.style.background='var(--cyan)', b.style.color='#000';
+    b.addEventListener('click', ()=>{ currentPage = i; renderResults(); });
+    pager.appendChild(b);
+  }
+  const next = document.createElement('button'); next.textContent='Next ▶'; next.disabled = currentPage === total;
+  next.addEventListener('click', ()=>{ if(currentPage<total){ currentPage++; renderResults(); }});
+  pager.appendChild(next);
+}
+
+/* ========= Diary functions (render + add + delete + filters) ========= */
+function updateTable(){
+  const tbody = document.getElementById('foodBody'); tbody.innerHTML = '';
+  let totCal = 0, totP = 0, totC = 0, totF = 0;
+  foods.forEach((it, idx) => {
+    const p = it.product || {}; const per = getPerGram(p.nutriments||{}, p.serving_size);
+    const grams = it.qty || 0;
+    const kcal = round1(per.kcal_g * grams);
+    const prot = round1(per.prot_g * grams);
+    const carb = round1(per.carb_g * grams);
+    const fat = round1(per.fat_g * grams);
+    const factor = per.basis === '100g' ? grams/100 : (parseFloat(per.basis)||grams) ? grams/(parseFloat(per.basis)||grams) : 1;
+    const ing = calculateIngredients(p.ingredients_text, factor);
+    totCal += kcal; totP += prot; totC += carb; totF += fat;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td><strong>${p.product_name||'Desconocido'}</strong>
+      <div class="source-info">Marca: ${p.brands||'N/D'}<br>Cat: ${(p.categories_tags||[]).map(c=>c.replace(/^..:/,'')).join(', ')||'N/D'}<br>${per.label}<br>Ingredientes escalados: ${ing}<br>🔗 <a href="${buildProductURL(p)}" target="_blank">Fuente oficial</a></div></td>
+      <td>${grams}</td><td>${kcal}</td><td>${prot}</td><td>${carb}</td><td>${fat}</td>
+      <td><button class="delete-btn" onclick="deleteFood(${idx})">❌</button></td>`;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('totalCalories').innerText = totCal.toFixed(1);
+  document.getElementById('totalProtein').innerText  = totP.toFixed(1);
+  document.getElementById('totalCarbs').innerText    = totC.toFixed(1);
+  document.getElementById('totalFat').innerText      = totF.toFixed(1);
+  updateDiarySelectors();
+}
+
+function deleteFood(i){ foods.splice(i,1); updateTable(); }
+
+/* diary selectors (no "Todas..." default) */
+function updateDiarySelectors(){
+  const brandSel = document.getElementById('filterBrandDiary');
+  const catSel = document.getElementById('filterCategoryDiary');
+  const brands = new Set(), cats = new Set();
+  foods.forEach(f=>{
+    const p=f.product||{};
+    if(p.brands) String(p.brands).split(',').map(s=>s.trim()).forEach(b=>brands.add(b));
+    (p.categories_tags||[]).forEach(c=>cats.add(c));
+  });
+  const prevB = brandSel.value;
+  brandSel.innerHTML = '';
+  Array.from(brands).sort().forEach(b=>{ const o=document.createElement('option'); o.value=b; o.textContent=b; brandSel.appendChild(o); });
+  if(prevB && Array.from(brandSel.options).some(o=>o.value===prevB)) brandSel.value = prevB;
+
+  const prevC = catSel.value;
+  catSel.innerHTML = '';
+  Array.from(cats).sort().forEach(c=>{ const o=document.createElement('option'); o.value=c; o.textContent=c.replace(/^..:/,''); catSel.appendChild(o); });
+  if(prevC && Array.from(catSel.options).some(o=>o.value===prevC)) catSel.value = prevC;
+}
+
+/* diary filtering (local) */
+document.getElementById('searchNameDiary').addEventListener('input', applyDiaryFilters);
+document.getElementById('filterBrandDiary').addEventListener('change', applyDiaryFilters);
+document.getElementById('filterCategoryDiary').addEventListener('change', applyDiaryFilters);
+
+function applyDiaryFilters(){
+  const q = document.getElementById('searchNameDiary').value.toLowerCase();
+  const b = document.getElementById('filterBrandDiary').value.toLowerCase();
+  const c = document.getElementById('filterCategoryDiary').value.toLowerCase();
+  const filtered = foods.filter(it=>{
+    const p = it.product || {};
+    if(q && !(p.product_name||'').toLowerCase().includes(q)) return false;
+    if(b && !((p.brands||'').toLowerCase().includes(b))) return false;
+    if(c && !((p.categories_tags||[]).map(x=>x.toLowerCase()).includes(c))) return false;
+    return true;
+  });
+  // render filtered
+  const tbody = document.getElementById('foodBody'); tbody.innerHTML = '';
+  filtered.forEach((it)=>{
+    const p = it.product || {}; const per = getPerGram(p.nutriments||{}, p.serving_size); const grams = it.qty||0;
+    const kcal = round1(per.kcal_g * grams), prot = round1(per.prot_g * grams), carb = round1(per.carb_g * grams), fat = round1(per.fat_g * grams);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td><strong>${p.product_name||'Desconocido'}</strong></td><td>${grams}</td><td>${kcal}</td><td>${prot}</td><td>${carb}</td><td>${fat}</td><td></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+/* add from form: search first match and add */
+document.getElementById('addFromForm').addEventListener('click', async ()=>{
+  const name = document.getElementById('alimento').value.trim();
+  const qty = parseFloat(document.getElementById('cantidad').value);
+  if(!name || !qty){ alert('Introduce nombre y gramos'); return; }
+  try{
+    showLoading(true);
+    const r = await fetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(name)}&search_simple=1&action=process&json=1&page_size=1`);
+    const j = await r.json(); showLoading(false);
+    const p = (j.products && j.products[0]) || null;
+    if(!p){ alert('No encontrado en OpenFoodFacts'); return; }
+    foods.push({ product: p, qty });
+    updateTable();
+    document.getElementById('alimento').value=''; document.getElementById('cantidad').value='';
+  }catch(e){ showLoading(false); console.error(e); alert('Error al buscar'); }
+});
+
+/* ========= Barcode search & scan ========= */
+document.getElementById('btnSearchBarcode').addEventListener('click', async ()=>{
+  const code = document.getElementById('barcodeInput').value.trim();
+  if(!code){ alert('Introduce el código'); return; }
+  try{
+    showLoading(true);
+    const r = await fetch(`https://world.openfoodfacts.org/api/v0/product/${code}.json`);
+    const j = await r.json(); showLoading(false);
+    if(j.status === 1){ showBarcodeResult(j.product); }
+    else alert('Producto no encontrado');
+  }catch(e){ showLoading(false); console.error(e); alert('Error al buscar por EAN'); }
+});
+
+function showBarcodeResult(p){
+  const out = document.getElementById('barcodeResults'); out.innerHTML = '';
+  const card = document.createElement('div'); card.className='ultra-cyber-card';
+  const img = p.image_front_small_url ? `<img src="${p.image_front_small_url}" style="cursor:pointer" data-large="${p.image_front_url||p.image_front_small_url}">` : '';
+  const per = getPerGram(p.nutriments||{}, p.serving_size);
+  card.innerHTML = `${img}<div class="card-text"><strong>${p.product_name||'Desconocido'}</strong><div class="helper">${p.brands||'N/D'} • ${per.label}</div>
+    <div class="source-info">Ingredientes: ${p.ingredients_text || 'N/D'}<br>🔗 <a href="${buildProductURL(p)}" target="_blank">Fuente oficial</a></div>
+    <label>Peso (g): <input type="number" id="barcodeWeight" value="100" style="width:80px;padding:8px;background:rgba(0,0,0,0.45)"></label>
+    <button id="addBarcodeBtn" class="small">➕ Añadir al Diario</button>
+    <button id="showBarcodeImg" class="small">Ver foto</button></div>`;
+  out.appendChild(card);
+  if(card.querySelector('img')) card.querySelector('img').addEventListener('click', ()=> openImageModal(card.querySelector('img').dataset.large));
+  document.getElementById('addBarcodeBtn').addEventListener('click', ()=>{
+    const w = parseFloat(document.getElementById('barcodeWeight').value) || 100;
+    foods.push({ product: p, qty: w });
+    updateTable(); alert(`${p.product_name||'Producto'} añadido (${w} g)`);
+  });
+  document.getElementById('showBarcodeImg').addEventListener('click', ()=>{
+    const im = card.querySelector('img');
+    if(im) openImageModal(im.dataset.large || im.src);
+    else alert('No hay imagen disponible');
+  });
+}
+
+/* ZXing fallback for file */
+document.getElementById('barcodeFile').addEventListener('change', async function(){
+  const file = this.files[0]; if(!file) return;
+  try{
+    showLoading(true);
+    const codeReader = new ZXing.BrowserBarcodeReader();
+    const result = await codeReader.decodeFromImage(undefined, file);
+    showLoading(false);
+    if(result && result.text){ document.getElementById('barcodeInput').value = result.text; document.getElementById('btnSearchBarcode').click(); }
+    else alert('No se detectó código en la imagen');
+  }catch(e){ showLoading(false); console.error(e); alert('No se detectó código en la imagen'); }
+});
+
+/* start camera scanner (html5-qrcode) */
+function startScanner(){
+  if(html5QrcodeScanner) return;
+  try{
+    html5QrcodeScanner = new Html5Qrcode("reader");
+    Html5Qrcode.getCameras().then(cams=>{
+      if(cams && cams.length){
+        const camId = cams[0].id;
+        html5QrcodeScanner.start({deviceId:camId}, { fps:10, qrbox:{width:200,height:80}, experimentalFeatures:{useBarCodeDetectorIfSupported:true} }, decoded => {
+          document.getElementById('barcodeInput').value = decoded; document.getElementById('btnSearchBarcode').click();
+        }, err=>{}).catch(e=>console.warn('No se pudo iniciar cámara',e));
+      }
+    }).catch(e=>console.warn('Sin cámaras',e));
+  }catch(e){ console.warn('html5-qrcode init error', e); }
+}
+
+/* ========= Chat functions ========= */
+document.getElementById('sendChat').addEventListener('click', async ()=>{
+  const q = document.getElementById('chatInput').value.trim(); if(!q) return;
+  appendChat('user', q); document.getElementById('chatInput').value='';
+  try{
+    showLoading(true);
+    const r = await fetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&search_simple=1&action=process&json=1&page_size=1`);
+    const j = await r.json(); showLoading(false);
+    const p = (j.products && j.products[0]) || null;
+    if(p){ appendChat('bot', `Encontrado: ${p.product_name||'Desconocido'}`); showProductInChat(p); }
+    else appendChat('bot','❌ No se encontró información');
+  }catch(e){ showLoading(false); appendChat('bot','⚠️ Error en búsqueda'); console.error(e); }
+});
+function appendChat(who,text){ const el=document.getElementById('chatMessages'); const p=document.createElement('p'); p.className='message '+(who==='user'?'user':'bot'); p.textContent=(who==='user'?'Yo: ':'IA: ')+text; el.appendChild(p); el.scrollTop=el.scrollHeight; }
+function showProductInChat(p){
+  const container = document.getElementById('chatMessages');
+  const card = document.createElement('div'); card.className='ultra-cyber-card';
+  const img = p.image_front_small_url ? `<img src="${p.image_front_small_url}" style="cursor:pointer" data-large="${p.image_front_url||p.image_front_small_url}">` : '';
+  card.innerHTML = `${img}<div class="card-text"><strong>${p.product_name||'Desconocido'}</strong>
+    <div class="helper">${p.brands||'N/D'}</div>
+    <div class="source-info">Ingredientes: ${p.ingredients_text||'N/D'}<br>🔗 <a href="${buildProductURL(p)}" target="_blank">Fuente oficial</a></div>
+    <label>Peso (g): <input type="number" class="chatWeight" value="100" style="width:80px;padding:8px;background:rgba(0,0,0,0.45)"></label>
+    <button class="addChat small">➕ Añadir</button>
+    <button class="viewChatImg small">Ver foto</button></div>`;
+  container.appendChild(card);
+  if(card.querySelector('img')) card.querySelector('img').addEventListener('click', ()=> openImageModal(card.querySelector('img').dataset.large));
+  card.querySelector('.addChat').addEventListener('click', ()=>{ const w=parseFloat(card.querySelector('.chatWeight').value)||100; foods.push({ product:p, qty:w }); updateTable(); alert(`${p.product_name||'Producto'} añadido (${w} g)`); });
+  card.querySelector('.viewChatImg').addEventListener('click', ()=>{ const im = card.querySelector('img'); if(im) openImageModal(im.dataset.large||im.src); else alert('No hay imagen'); });
+  container.scrollTop = container.scrollHeight;
+}
+
+/* ========= Image modal ========= */
+function openImageModal(src){ if(!src) return alert('Imagen no disponible'); document.getElementById('imageModalImg').src = src; document.getElementById('imageModal').style.display = 'flex'; }
+document.getElementById('closeImageModal').addEventListener('click', ()=>{ document.getElementById('imageModal').style.display = 'none'; document.getElementById('imageModalImg').src = ''; });
+
+/* ========= Init ========= */
+updateTable();
+
+/* expose for console if needed */
+window.runSearch = runSearch;
+window.populateStores = populateStores;
+window.populateCategories = populateCategories;
+</script>
+</body>
+</html>
